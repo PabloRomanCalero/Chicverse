@@ -32,6 +32,8 @@
         <div id="product-container">
             
         </div>
+
+        <div id="snackbar"></div>
     </div>
     
 @endsection

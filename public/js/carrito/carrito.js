@@ -73,14 +73,18 @@ async function listarCarrito(){
             mas.textContent = '+';
             precio.textContent = `Pr/ud: ${producto.price} €`;
             precioTotalProducto.textContent = `Total: ${(producto.price * line.quantity).toFixed(2)} €`;
+            precioTotalProducto.id = `${producto.id}-${tallaData.talla}-precio`;
             botonEliminar.textContent = 'Eliminar';
             talla.textContent = `TALLA : ${tallaData.talla}`;
             stock.textContent = `STOCK : ${tallaData.stock}`;
             cantidad.textContent = line.quantity;
+            cantidad.id = `${producto.id}-${tallaData.talla}-cantidad`;
             mas.value = line.id;
             menos.value = line.id;
             mas.dataset.id = line.quantity;
+            mas.dataset.line = `${producto.id}-${tallaData.talla}`;
             menos.dataset.id = line.quantity;
+            menos.dataset.line = `${producto.id}-${tallaData.talla}`;
             botonEliminar.value = line.id;
 
             articuloProducto.className="articulo--producto-carrito";
@@ -104,7 +108,7 @@ async function listarCarrito(){
             let precioTotalProductos = producto.price * line.quantity;
             listaProductos.push({"name":producto.name,"cantidad":line.quantity,"precio":precioTotalProductos,"product_id":producto.id,"stock":producto.stock});
 
-            if(producto.stock < line.quantity){
+            if(tallaData.stock < line.quantity){
                 stockTotal = false;
             }
 
@@ -112,7 +116,7 @@ async function listarCarrito(){
             if(contadorLinesLength === orderLinesLength){
                 precioFinal = precioFinal.toFixed(2);
                 compraFinal(precioFinal,numeroCarrito,stockTotal,orderLines,listaProductos);
-                eventoSumarRestar();
+                eventoSumarRestar(tallaData.stock, producto.price);
                 borrarLineOrder();
             }
 
@@ -134,20 +138,28 @@ async function listarCarrito(){
     }
 }
 
-function eventoSumarRestar(){
+function eventoSumarRestar(stock, price){
     let botonesCantidad = document.querySelectorAll('.boton-mas-menos');
-
     botonesCantidad.forEach(boton=>{
         boton.addEventListener('click',(e)=>{
             let orderLineId = e.target.value;
             let target = e.target.textContent;
-            let cantidad = parseInt(e.target.dataset.id);
+            let line = e.target.getAttribute("data-line");
+            let textCantidad = document.getElementById(`${line}-cantidad`);
+            let textPrice = document.getElementById(`${line}-precio`);
+            let cantidad = parseInt(textCantidad.textContent);
 
-            if(target === '+'){
-                cantidad = cantidad + 1;
-            }else{
+            if (target === '+') {
+                if (cantidad < stock) {
+                    cantidad += 1;
+                }
+            } else if (target === '-') {
                 cantidad -= 1;
             }
+
+            textCantidad.textContent = cantidad;
+            textPrice.textContent = `Total: ${(price * cantidad).toFixed(2)} €`;
+
             if(cantidad <= 0 ){
                 fetch(`api/orderLines/${orderLineId}`, {
                     method: "DELETE",
@@ -156,6 +168,7 @@ function eventoSumarRestar(){
                         'Content-Type': 'application/json',
                     },
                 });
+                listarCarrito();
             }else{
                 fetch(`api/orderLines/${orderLineId}`, {
                     method: "PUT",
@@ -166,8 +179,6 @@ function eventoSumarRestar(){
                     body: JSON.stringify({"quantity": cantidad}),
                 });
             }
-
-            listarCarrito();
         });
 
     });

@@ -193,6 +193,16 @@ async function inicializar() {
         }
     }
 
+    function showSnackbar(message) {
+        const snackbar = document.getElementById("snackbar");
+        snackbar.textContent = message;
+        snackbar.classList.add("show");
+    
+        setTimeout(() => {
+            snackbar.classList.remove("show");
+        }, 3000);
+    }
+
     async function addCarrito(product, quantity, talla) {
         let respOrders = await fetch('/api/orders/cart');
         let order = await respOrders.json();
@@ -218,6 +228,7 @@ async function inicializar() {
             } else{
                 introducirProductoCarrito(order[0].id,product.id,quantity,talla);
             }    
+            showSnackbar(`Producto "${product.name}" añadido al carrito`);
         }
         
     }

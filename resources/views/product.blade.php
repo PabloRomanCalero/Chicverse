@@ -8,6 +8,7 @@
     
     <div class="product-container" id="product-container" data-product-id="{{$product_id}}"> 
     </div>
+    <div id="snackbar"></div>
     <script>
         const tiendaUrl = "{{ route('tienda') }}";
     </script>
